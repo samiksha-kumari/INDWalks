@@ -91,5 +91,36 @@ namespace INDWalks.API.Controllers
             };
             return CreatedAtAction(nameof(GetById), new { id = regionDto.Id }, regionDto);
         }
+
+        //Update Region
+        [HttpPut]
+        [Route("{id:Guid}")]
+        public IActionResult Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDto updateRegionRequestDto)
+        {
+            //Get the region from database // check if region exists or not
+            var regionDomainModel =  dbContext.Regions.FirstOrDefault(x => x.Id == id);
+            if (regionDomainModel == null)
+            {
+                return NotFound();
+            }
+
+            // Map DTO to Domain Model
+            regionDomainModel.Code = updateRegionRequestDto.Code;
+            regionDomainModel.Name = updateRegionRequestDto.Name;
+            regionDomainModel.RegionImageUrl = updateRegionRequestDto.RegionImageUrl;
+
+            //Update region using Domain Model
+            dbContext.SaveChanges();
+
+            //Convert Domain Model to DTO
+            var regionDto = new RegionDto
+            {
+                Id = regionDomainModel.Id,
+                Name = regionDomainModel.Name,
+                Code = regionDomainModel.Code,
+                RegionImageUrl = regionDomainModel.RegionImageUrl
+            };
+            return Ok(regionDto);
+        }
     }
 }
