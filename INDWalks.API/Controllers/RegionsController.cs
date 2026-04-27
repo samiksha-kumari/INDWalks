@@ -122,5 +122,31 @@ namespace INDWalks.API.Controllers
             };
             return Ok(regionDto);
         }
+
+        //Delete a Region
+        [HttpDelete]
+        [Route("{id:Guid}")]
+        public IActionResult Delete([FromRoute] Guid id)
+        {
+            var regionDomainModel = dbContext.Regions.FirstOrDefault(x => x.Id == id);
+            if(regionDomainModel == null)
+            {
+                return NotFound();
+            }
+
+            //delete region
+            dbContext.Regions.Remove(regionDomainModel);
+            dbContext.SaveChanges();
+
+            // return deleted region back //map domain model to DTO
+            var regionDto = new RegionDto
+            {
+                Id = regionDomainModel.Id,
+                Name = regionDomainModel.Name,
+                Code = regionDomainModel.Code,
+                RegionImageUrl = regionDomainModel.RegionImageUrl
+            };
+            return Ok(regionDto);
+        }
     }
 }
