@@ -2,6 +2,7 @@
 using INDWalks.API.Models.Domain;
 using INDWalks.API.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace INDWalks.API.Controllers
 {
@@ -17,10 +18,10 @@ namespace INDWalks.API.Controllers
         }
         //GET ALL REGIONS
         [HttpGet]
-        public IActionResult GetAllRegions()
+        public async Task<IActionResult> GetAllRegions()
         {
             //GET data from db
-            var regionsDomain = dbContext.Regions.ToList();
+            var regionsDomain = await dbContext.Regions.ToListAsync();
 
             //Map domain models to DTOs
             var regionsDTO = new List<RegionDto>();
@@ -42,10 +43,10 @@ namespace INDWalks.API.Controllers
         //get region by ID
         [HttpGet]
         [Route("{id:Guid}")]  // get mapped from route to a input parameter
-        public IActionResult GetById([FromRoute] Guid id)
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
         {
             //var region =  dbContext.Regions.Find(id);
-            var regionDoamin = dbContext.Regions.FirstOrDefault(x => x.Id == id);
+            var regionDoamin = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
             if (regionDoamin == null)
             {
                 return NotFound();
@@ -65,7 +66,7 @@ namespace INDWalks.API.Controllers
 
         //Post to create new region
         [HttpPost]
-        public IActionResult Create([FromBody] AddRegionRequestDto addRegionRequestDto)
+        public async Task<IActionResult> Create([FromBody] AddRegionRequestDto addRegionRequestDto)
         {
             //Map or Convert DTO to Domain Model
             var regionDomailModel = new Region
@@ -78,8 +79,8 @@ namespace INDWalks.API.Controllers
 
             //Use DomainModel to create Region
 
-            dbContext.Regions.Add(regionDomailModel);
-            dbContext.SaveChanges(); // EF saves the changes and it will reflected in SQL server.
+            await dbContext.Regions.AddAsync(regionDomailModel);
+            await dbContext.SaveChangesAsync(); // EF saves the changes and it will reflected in SQL server.
 
             //Map Domain Model back to DTO
             var regionDto = new RegionDto
@@ -95,10 +96,10 @@ namespace INDWalks.API.Controllers
         //Update Region
         [HttpPut]
         [Route("{id:Guid}")]
-        public IActionResult Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDto updateRegionRequestDto)
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDto updateRegionRequestDto)
         {
             //Get the region from database // check if region exists or not
-            var regionDomainModel =  dbContext.Regions.FirstOrDefault(x => x.Id == id);
+            var regionDomainModel = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
             if (regionDomainModel == null)
             {
                 return NotFound();
@@ -110,7 +111,7 @@ namespace INDWalks.API.Controllers
             regionDomainModel.RegionImageUrl = updateRegionRequestDto.RegionImageUrl;
 
             //Update region using Domain Model
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             //Convert Domain Model to DTO
             var regionDto = new RegionDto
@@ -126,9 +127,9 @@ namespace INDWalks.API.Controllers
         //Delete a Region
         [HttpDelete]
         [Route("{id:Guid}")]
-        public IActionResult Delete([FromRoute] Guid id)
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            var regionDomainModel = dbContext.Regions.FirstOrDefault(x => x.Id == id);
+            var regionDomainModel = await dbContext.Regions.FirstOrDefaultAsync(x => x.Id == id);
             if(regionDomainModel == null)
             {
                 return NotFound();
@@ -136,7 +137,7 @@ namespace INDWalks.API.Controllers
 
             //delete region
             dbContext.Regions.Remove(regionDomainModel);
-            dbContext.SaveChanges();
+            await dbContext.SaveChangesAsync();
 
             // return deleted region back //map domain model to DTO
             var regionDto = new RegionDto
