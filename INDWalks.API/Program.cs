@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using INDWalks.API.Data;
+using INDWalks.API.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,9 @@ builder.Services.AddDbContext<NZWalksDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("NZWalksConnectionString")));
 
 // Register the repository with the dependency injection container
+builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
