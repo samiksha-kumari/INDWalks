@@ -1,4 +1,5 @@
-﻿using INDWalks.API.Data;
+﻿using AutoMapper;
+using INDWalks.API.Data;
 using INDWalks.API.Models.Domain;
 using INDWalks.API.Models.DTO;
 using INDWalks.API.Repositories;
@@ -12,11 +13,13 @@ namespace INDWalks.API.Controllers
     {
         private readonly NZWalksDbContext dbContext;
         private readonly IRegionRepository regionRepository;
+        private readonly IMapper mapper;
 
-        public RegionsController(NZWalksDbContext dbContext, IRegionRepository regionRepository)
+        public RegionsController(NZWalksDbContext dbContext, IRegionRepository regionRepository, IMapper mapper)
         {
             this.dbContext = dbContext;
             this.regionRepository = regionRepository;
+            this.mapper = mapper;
         }
         //GET ALL REGIONS
         [HttpGet]
@@ -26,20 +29,9 @@ namespace INDWalks.API.Controllers
             var regionsDomain = await regionRepository.GetAllAsync();
 
             //Map domain models to DTOs
-            var regionsDTO = new List<RegionDto>();
-            foreach (var regionDomain in regionsDomain)
-            {
-                regionsDTO.Add(new RegionDto()
-                {
-                    Id = regionDomain.Id,
-                    Name = regionDomain.Name,
-                    Code = regionDomain.Code,
-                    RegionImageUrl = regionDomain.RegionImageUrl
-                });
-            }
-
+            var regionsDto = mapper.Map<List<RegionDto>>(regionsDomain);
             //Return DTOs
-            return Ok(regionsDTO);
+            return Ok(regionsDto);
         }
 
         //get region by ID
@@ -55,15 +47,7 @@ namespace INDWalks.API.Controllers
             }
 
             //Map/Convert Region Domail Model to Region DTO
-            var regionDTO = new RegionDto()
-            {
-                Id = regionDoamin.Id,
-                Name = regionDoamin.Name,
-                Code = regionDoamin.Code,
-                RegionImageUrl = regionDoamin.RegionImageUrl
-            };
-
-            return Ok(regionDTO);
+            return Ok(mapper.Map<RegionDto>(regionDoamin));           
         }
 
         //Post to create new region
@@ -71,25 +55,14 @@ namespace INDWalks.API.Controllers
         public async Task<IActionResult> Create([FromBody] AddRegionRequestDto addRegionRequestDto)
         {
             //Map or Convert DTO to Domain Model
-            var regionDomainModel = new Region
-            {
-                Code = addRegionRequestDto.Code,
-                Name = addRegionRequestDto.Name,
-                RegionImageUrl = addRegionRequestDto.RegionImageUrl
-            };
-
+            var regionDomainModel = mapper.Map<Region>(addRegionRequestDto);
 
             //Use DomainModel to create Region
             regionDomainModel = await regionRepository.CreateAsync(regionDomainModel);
 
             //Map Domain Model back to DTO
-            var regionDto = new RegionDto
-            {
-                Id = regionDomainModel.Id,
-                Name = regionDomainModel.Name,
-                Code = regionDomainModel.Code,
-                RegionImageUrl = regionDomainModel.RegionImageUrl
-            };
+            var regionDto = mapper.Map<RegionDto>(regionDomainModel);
+
             return CreatedAtAction(nameof(GetById), new { id = regionDto.Id }, regionDto);
         }
 
@@ -99,12 +72,7 @@ namespace INDWalks.API.Controllers
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateRegionRequestDto updateRegionRequestDto)
         {
 
-            var regionDomainModel = new Region
-            {
-                Code = updateRegionRequestDto.Code,
-                Name = updateRegionRequestDto.Name,
-                RegionImageUrl = updateRegionRequestDto.RegionImageUrl
-            };
+            var regionDomainModel = mapper.Map<Region>(updateRegionRequestDto);
             //Get the region from database // check if region exists or not
             regionDomainModel = await regionRepository.UpdateAsync(id, regionDomainModel);
             if (regionDomainModel == null)
@@ -113,13 +81,7 @@ namespace INDWalks.API.Controllers
             }
 
             //Convert Domain Model to DTO
-            var regionDto = new RegionDto
-            {
-                Id = regionDomainModel.Id,
-                Name = regionDomainModel.Name,
-                Code = regionDomainModel.Code,
-                RegionImageUrl = regionDomainModel.RegionImageUrl
-            };
+            var regionDto = mapper.Map<Region>(regionDomainModel);
             return Ok(regionDto);
         }
 
@@ -134,15 +96,8 @@ namespace INDWalks.API.Controllers
                 return NotFound();
             }
 
-            // return deleted region back //map domain model to DTO
-            var regionDto = new RegionDto
-            {
-                Id = regionDomainModel.Id,
-                Name = regionDomainModel.Name,
-                Code = regionDomainModel.Code,
-                RegionImageUrl = regionDomainModel.RegionImageUrl
-            };
-            return Ok(regionDto);
+            // return deleted region back //map domain model to DTO            
+            return Ok(mapper.Map<RegionDto>(regionDomainModel));
         }
     }
 }
