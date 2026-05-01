@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using INDWalks.API.Data;
 using INDWalks.API.Repositories;
+using INDWalks.API.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,7 @@ builder.Services.AddDbContext<NZWalksDbContext>(options =>
 // Register the repository with the dependency injection container
 builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>();
 
+builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 
 var app = builder.Build();
 
